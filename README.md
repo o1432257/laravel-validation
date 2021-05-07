@@ -300,3 +300,73 @@ protected function convertValidationExceptionToResponse(ValidationException $e, 
 但光一個 CRUD 就建了3個 Form Requests 
 
 下一步會加上驗證場景 讓我們同一個 Form Requests 就可以完成驗證的工作
+
+## 改造 Form Requests
+
+新建一個 Form Requests
+```
+$ php artisan make:request MarqueeRequest   
+```
+利用$this->method取得當前請求方法
+依據不同方法 給不同的驗證規則
+```php=
+public function rules()
+    {
+        switch ($this->method()) {
+            // STORE
+            case 'POST':
+            {
+                return [
+                    // STORE ROLES
+                    'display'     => ['required'],
+                    'forever'     => ['required', 'in:1,2'],
+                    'title'       => ['required', 'max:20'],
+                    'description' => ['required', 'max:500'],
+                    'start_at'    => ['bail', 'required', 'date_format:Y-m-d H:i:s', 'after_or_equal:' . date("Y-m-d H:i:s", strtotime('-2 minute'))],
+                    'end_at'      => ['bail', 'required_if:forever,==,2', 'date_format:Y-m-d H:i:s', 'after:start_at']
+                ];
+            }
+            // UPDATE
+            case 'PUT':
+            case 'PATCH':
+            {
+                return [
+                    // UPDATE ROLES
+                    'id'          => ['required', 'exists:marquees,id'],
+                    'display'     => ['required'],
+                    'forever'     => ['required', 'in:1,2'],
+                    'title'       => ['required', 'max:20'],
+                    'description' => ['required', 'max:500'],
+                    'start_at'    => ['bail', 'required', 'date_format:Y-m-d H:i:s', 'after_or_equal:' . date("Y-m-d H:i:s", strtotime('-2 minute'))],
+                    'end_at'      => ['bail', 'required_if:forever,==,2', 'date_format:Y-m-d H:i:s', 'after:start_at']
+                ];
+            }
+            //DELETE
+            case 'DELETE':
+            {
+                return [
+                    //DELETE ROLES
+                    'id' => ['required', 'exists::marquee,id']
+                ];
+            }
+            case 'GET':
+            default:
+            {
+                return [];
+            }
+        }
+    }
+```
+Controller記得也要改
+```php=
+public function store(MarqueeRequest $request)
+{
+    Marquee::create($request->all());
+
+    return response()->json([
+        'status_code' => 200,
+        'result' => 'true'
+    ]);
+}
+```
+## 完成
