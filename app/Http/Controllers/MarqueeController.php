@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MarqueeDestoryRequest;
+use App\Http\Requests\MarqueeRequest;
 use App\Http\Requests\MarqueeStoreRequest;
 use App\Http\Requests\MarqueeUpdateRequest;
 use App\Models\Marquee;
@@ -21,7 +22,7 @@ class MarqueeController extends Controller
         ]);
     }
 
-    public function store(MarqueeStoreRequest $request)
+    public function store(MarqueeRequest $request)
     {
         Marquee::create($request->all());
 
@@ -31,7 +32,7 @@ class MarqueeController extends Controller
         ]);
     }
 
-    public function update(MarqueeUpdateRequest $request)
+    public function update(MarqueeRequest $request)
     {
         $params = $request->except('id');
         Marquee::find($request->input('id'))->update($params);
@@ -42,7 +43,7 @@ class MarqueeController extends Controller
         ]);
     }
 
-    public function destroy(MarqueeDestoryRequest $request)
+    public function destroy(MarqueeRequest $request)
     {
         Marquee::find($request->input('id'))->delete();
 
